@@ -11,7 +11,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.GridView;
-import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -32,6 +31,7 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<MovieUtils> movieUtilses;
     private int CONNECTION_TIMOUT=10000;
     private String TAG = "MainActivity";
+    private MoviesGridAdapter popularityMoviesGridAdapter,ratingsMovieGridAdapter;
 
     private static String TAG_RESULTS = "results";
     private static String TAG_POSTER_PATH = "poster_path";
@@ -41,6 +41,7 @@ public class MainActivity extends AppCompatActivity {
     private static String TAG_VOTE_COUNT = "vote_count";
     private static String TAG_VOTE_AVERAGE = "vote_average";
     private String TAG_RELEASE_DATE = "release_date";
+    private String KEY_SAVEDINSTANCE_DATA = "movieDataSet";
 
     private String PARCEL_KEY = "movieItem";
 
@@ -61,11 +62,27 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbarMainActivity);
         setSupportActionBar(toolbar);
 
+        if (savedInstanceState == null || !savedInstanceState.containsKey("movieDataSet")) {
+            //NO DATA SAVED, FETCH FROM INTERNET
+            FetchMovies fetchMovies = new FetchMovies();
+            fetchMovies.execute(URL_POPULARITY);
+        } else {
+
+            movieUtilses = savedInstanceState.getParcelableArrayList(KEY_SAVEDINSTANCE_DATA);
+            if (movieUtilses != null) {
+                gridview.setAdapter(new MoviesGridAdapter(MainActivity.this, movieUtilses));
+            } else {
+                FetchMovies fetchMovies = new FetchMovies();
+                fetchMovies.execute(URL_POPULARITY);
+            }
+        }
+
+
+
+
         gridview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View v,
                                     int position, long id) {
-                Toast.makeText(MainActivity.this, "" + position,
-                        Toast.LENGTH_SHORT).show();
 
                 Intent intent = new Intent(MainActivity.this , MovieDetails.class);
                 Bundle mBundle = new Bundle();
@@ -76,9 +93,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-
-        FetchMovies fetchMovies = new FetchMovies();
-        fetchMovies.execute(URL_POPULARITY);
 
     }
 
@@ -118,7 +132,12 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        outState.putParcelableArrayList(KEY_SAVEDINSTANCE_DATA , movieUtilses);
+        super.onSaveInstanceState(outState);
 
+    }
 
     synchronized private String openHttpConnection(String urlStr) {
         InputStream in = null;
@@ -179,6 +198,8 @@ public class MainActivity extends AppCompatActivity {
                     JSONObject resultJSON = new JSONObject(result[0]);
                     JSONArray resultJSONArray = resultJSON.getJSONArray(TAG_RESULTS);
 
+                    movieUtilses = new ArrayList<>();
+
                     for(int i=0;i<resultJSONArray.length(); i++){
 
                         JSONObject movieItem = resultJSONArray.getJSONObject(i);
@@ -195,8 +216,9 @@ public class MainActivity extends AppCompatActivity {
 
                         movieUtilses.add(movieUtils);
                     }
+
+
                     MoviesGridAdapter moviesGridAdapter = new MoviesGridAdapter(MainActivity.this , movieUtilses);
-                    moviesGridAdapter.notifyDataSetChanged();
                     gridview.setAdapter(moviesGridAdapter);
 
                 } catch (Exception e) {

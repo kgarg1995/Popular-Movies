@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">AAAAMovies</string>
+    <string name="app_name">That Movies App</string>
     <string name="actionPopularity">Popularity</string>
     <string name="actionRatings">Ratings</string>
 </resources>

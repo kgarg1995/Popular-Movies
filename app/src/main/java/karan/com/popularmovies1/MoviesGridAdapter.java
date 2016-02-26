@@ -1,8 +1,6 @@
 package karan.com.popularmovies1;
 
 import android.content.Context;
-import android.content.Intent;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -71,16 +69,6 @@ public class MoviesGridAdapter extends BaseAdapter {
         Log.d(TAG, "Title " + movieUtils.title);
 
         Picasso.with(mContext).load(BASE_IMAGE_URL + movieUtils.posterPath).into(gridViewHolder.posterImage);
-        gridViewHolder.posterImage.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(mContext , MovieDetails.class);
-                Bundle mBundle = new Bundle();
-                mBundle.putParcelable(PARCEL_KEY, movieUtils);
-                intent.putExtras(mBundle);
-                mContext.startActivity(intent);
-            }
-        });
 
         return convertView;
     }
