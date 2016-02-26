@@ -1,3 +1,5 @@
 <resources>
-    <string name="app_name">Popular Movies1</string>
+    <string name="app_name">AAAAMovies</string>
+    <string name="actionPopularity">Popularity</string>
+    <string name="actionRatings">Ratings</string>
 </resources>

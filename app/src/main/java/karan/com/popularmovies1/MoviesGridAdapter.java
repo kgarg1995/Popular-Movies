@@ -1,11 +1,16 @@
 package karan.com.popularmovies1;
 
 import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
+
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
@@ -17,6 +22,9 @@ public class MoviesGridAdapter extends BaseAdapter {
 
     private ArrayList<MovieUtils> moviesList;
     private Context mContext;
+    private static String TAG = "MoviesGridAdapter";
+    private static String BASE_IMAGE_URL= "http://image.tmdb.org/t/p/w185/";
+    private String PARCEL_KEY = "movieItem";
 
     public MoviesGridAdapter(Context context , ArrayList<MovieUtils> moviesList){
         this.moviesList = moviesList;
@@ -58,8 +66,21 @@ public class MoviesGridAdapter extends BaseAdapter {
         }
 
         // update the item view
-        MovieUtils movieUtils = moviesList.get(position);
-        gridViewHolder.posterImage.setImageBitmap(movieUtils.moviePoster);
+        final MovieUtils movieUtils = moviesList.get(position);
+        Log.d(TAG, "URL "+ BASE_IMAGE_URL + movieUtils.posterPath);
+        Log.d(TAG, "Title " + movieUtils.title);
+
+        Picasso.with(mContext).load(BASE_IMAGE_URL + movieUtils.posterPath).into(gridViewHolder.posterImage);
+        gridViewHolder.posterImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(mContext , MovieDetails.class);
+                Bundle mBundle = new Bundle();
+                mBundle.putParcelable(PARCEL_KEY, movieUtils);
+                intent.putExtras(mBundle);
+                mContext.startActivity(intent);
+            }
+        });
 
         return convertView;
     }

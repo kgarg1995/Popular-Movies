@@ -1,9 +1,13 @@
 package karan.com.popularmovies1;
 
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.GridView;
@@ -36,6 +40,9 @@ public class MainActivity extends AppCompatActivity {
     private static String TAG_POPULARITY = "popularity";
     private static String TAG_VOTE_COUNT = "vote_count";
     private static String TAG_VOTE_AVERAGE = "vote_average";
+    private String TAG_RELEASE_DATE = "release_date";
+
+    private String PARCEL_KEY = "movieItem";
 
     private static String URL_POPULARITY = "http://api.themoviedb.org/3/discover/" +
             "movie?sort_by=popularity.desc&api_key=36d9e05a1700874f1a755d3c95b0d6e8";
@@ -51,11 +58,21 @@ public class MainActivity extends AppCompatActivity {
         movieUtilses = new ArrayList<>();
         gridview = (GridView) findViewById(R.id.gridview);
 
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbarMainActivity);
+        setSupportActionBar(toolbar);
+
         gridview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View v,
                                     int position, long id) {
                 Toast.makeText(MainActivity.this, "" + position,
                         Toast.LENGTH_SHORT).show();
+
+                Intent intent = new Intent(MainActivity.this , MovieDetails.class);
+                Bundle mBundle = new Bundle();
+                mBundle.putParcelable(PARCEL_KEY, movieUtilses.get(position));
+                intent.putExtras(mBundle);
+                startActivity(intent);
+
             }
         });
 
@@ -64,6 +81,44 @@ public class MainActivity extends AppCompatActivity {
         fetchMovies.execute(URL_POPULARITY);
 
     }
+
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+
+        return super.onCreateOptionsMenu(menu);
+    }
+
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+
+        if (id == R.id.actionPoplularity) {
+            Log.d(TAG , "Sorting by popularity");
+            FetchMovies fetchMovies = new FetchMovies();
+            fetchMovies.execute(URL_POPULARITY);
+            return true;
+        }
+
+        if (id == R.id.actionRatings) {
+            Log.d(TAG , "Sorting by ratings");
+            FetchMovies fetchMovies = new FetchMovies();
+            fetchMovies.execute(URL_RATINGS);
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+
 
     synchronized private String openHttpConnection(String urlStr) {
         InputStream in = null;
@@ -125,6 +180,7 @@ public class MainActivity extends AppCompatActivity {
                     JSONArray resultJSONArray = resultJSON.getJSONArray(TAG_RESULTS);
 
                     for(int i=0;i<resultJSONArray.length(); i++){
+
                         JSONObject movieItem = resultJSONArray.getJSONObject(i);
                         MovieUtils movieUtils = new MovieUtils();
                         movieUtils.posterPath = movieItem.getString(TAG_POSTER_PATH);
@@ -133,11 +189,15 @@ public class MainActivity extends AppCompatActivity {
                         movieUtils.popularity = movieItem.getString(TAG_POPULARITY);
                         movieUtils.voteCount = movieItem.getString(TAG_VOTE_COUNT);
                         movieUtils.voteAverage = movieItem.getString(TAG_VOTE_AVERAGE);
+                        movieUtils.releaseDate = movieItem.getString(TAG_RELEASE_DATE);
+
+                        Log.d(TAG , "Title " + movieUtils.title);
 
                         movieUtilses.add(movieUtils);
                     }
-
-                    gridview.setAdapter(new MoviesGridAdapter(MainActivity.this,movieUtilses));
+                    MoviesGridAdapter moviesGridAdapter = new MoviesGridAdapter(MainActivity.this , movieUtilses);
+                    moviesGridAdapter.notifyDataSetChanged();
+                    gridview.setAdapter(moviesGridAdapter);
 
                 } catch (Exception e) {
                     // Check log for errors
