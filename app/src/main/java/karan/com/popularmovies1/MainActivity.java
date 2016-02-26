@@ -46,9 +46,9 @@ public class MainActivity extends AppCompatActivity {
     private String PARCEL_KEY = "movieItem";
 
     private static String URL_POPULARITY = "http://api.themoviedb.org/3/discover/" +
-            "movie?sort_by=popularity.desc&api_key=36d9e05a1700874f1a755d3c95b0d6e8";
+            "movie?sort_by=popularity.desc&api_key=";
     private static String URL_RATINGS = "http://api.themoviedb.org/3/discover/" +
-            "movie?sort_by=vote_average.desc&api_key=36d9e05a1700874f1a755d3c95b0d6e8";
+            "movie?sort_by=vote_average.desc&api_key=";
 
 
     @Override
