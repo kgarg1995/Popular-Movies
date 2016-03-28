@@ -1,7 +1,6 @@
 package karan.com.popularmovies1;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -65,8 +64,8 @@ public class MoviesGridAdapter extends BaseAdapter {
 
         // update the item view
         final MovieUtils movieUtils = moviesList.get(position);
-        Log.d(TAG, "URL "+ BASE_IMAGE_URL + movieUtils.posterPath);
-        Log.d(TAG, "Title " + movieUtils.title);
+        //Log.d(TAG, "URL "+ BASE_IMAGE_URL + movieUtils.posterPath);
+        //Log.d(TAG, "Title " + movieUtils.title);
 
         Picasso.with(mContext).load(BASE_IMAGE_URL + movieUtils.posterPath).into(gridViewHolder.posterImage);
 

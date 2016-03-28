@@ -15,15 +15,12 @@ import android.widget.GridView;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.ArrayList;
+
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -40,15 +37,16 @@ public class MainActivity extends AppCompatActivity {
     private static String TAG_POPULARITY = "popularity";
     private static String TAG_VOTE_COUNT = "vote_count";
     private static String TAG_VOTE_AVERAGE = "vote_average";
+    private static String TAG_ID = "id";
     private String TAG_RELEASE_DATE = "release_date";
     private String KEY_SAVEDINSTANCE_DATA = "movieDataSet";
-
+    private OkHttpClient client;
     private String PARCEL_KEY = "movieItem";
 
     private static String URL_POPULARITY = "http://api.themoviedb.org/3/discover/" +
-            "movie?sort_by=popularity.desc&api_key=";
+            "movie?sort_by=popularity.desc&api_key=36d9e05a1700874f1a755d3c95b0d6e8";
     private static String URL_RATINGS = "http://api.themoviedb.org/3/discover/" +
-            "movie?sort_by=vote_average.desc&api_key=";
+            "movie?sort_by=vote_average.desc&api_key=36d9e05a1700874f1a755d3c95b0d6e8";
 
 
     @Override
@@ -58,6 +56,8 @@ public class MainActivity extends AppCompatActivity {
 
         movieUtilses = new ArrayList<>();
         gridview = (GridView) findViewById(R.id.gridview);
+
+        client = new OkHttpClient();
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbarMainActivity);
         setSupportActionBar(toolbar);
@@ -139,7 +139,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    synchronized private String openHttpConnection(String urlStr) {
+    /*synchronized private String openHttpConnection(String urlStr) {
         InputStream in = null;
         int resCode = -1;
         StringBuilder content = new StringBuilder();
@@ -178,14 +178,27 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
         return content.toString();
-    }
+    }*/
 
+    String run(String url) throws IOException {
+        Request request = new Request.Builder()
+                .url(url)
+                .build();
+
+        Response response = client.newCall(request).execute();
+        return response.body().string();
+    }
 
     private class FetchMovies extends AsyncTask<String , String , String>{
 
         @Override
         protected String doInBackground(String... params) {
-            publishProgress(openHttpConnection(params[0]));
+            try {
+                publishProgress(run(params[0]));
+            }catch (IOException e){
+                Log.d(TAG , "okhttp error " + e.getMessage());
+            }
+
             return null;
         }
 
@@ -211,8 +224,9 @@ public class MainActivity extends AppCompatActivity {
                         movieUtils.voteCount = movieItem.getString(TAG_VOTE_COUNT);
                         movieUtils.voteAverage = movieItem.getString(TAG_VOTE_AVERAGE);
                         movieUtils.releaseDate = movieItem.getString(TAG_RELEASE_DATE);
+                        movieUtils.id = movieItem.getString(TAG_ID);
 
-                        Log.d(TAG , "Title " + movieUtils.title);
+                        Log.d(TAG , "Title " + movieUtils.id);
 
                         movieUtilses.add(movieUtils);
                     }

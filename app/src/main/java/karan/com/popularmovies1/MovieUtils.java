@@ -17,7 +17,7 @@ public class MovieUtils implements Parcelable {
     protected String popularity;
     protected String voteCount;
     protected String voteAverage;
-
+    protected String id;
 
     public MovieUtils(){
 
@@ -39,6 +39,7 @@ public class MovieUtils implements Parcelable {
         dest.writeString(popularity);
         dest.writeString(voteCount);
         dest.writeString(voteAverage);
+        dest.writeString(id);
     }
 
     // Creator
@@ -63,5 +64,6 @@ public class MovieUtils implements Parcelable {
         popularity = in.readString();
         voteCount = in.readString();
         voteAverage = in.readString();
+        id = in.readString();
     }
 }
