@@ -48,12 +48,14 @@ public class MainActivity extends AppCompatActivity {
     private static String URL_RATINGS = "http://api.themoviedb.org/3/discover/" +
             "movie?sort_by=vote_average.desc&api_key=36d9e05a1700874f1a755d3c95b0d6e8";
 
+    private DBHandler dbHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        dbHandler = new DBHandler(MainActivity.this);
         movieUtilses = new ArrayList<>();
         gridview = (GridView) findViewById(R.id.gridview);
 
@@ -72,8 +74,13 @@ public class MainActivity extends AppCompatActivity {
             if (movieUtilses != null) {
                 gridview.setAdapter(new MoviesGridAdapter(MainActivity.this, movieUtilses));
             } else {
-                FetchMovies fetchMovies = new FetchMovies();
-                fetchMovies.execute(URL_POPULARITY);
+                movieUtilses = dbHandler.getAllFavorites();
+                if (movieUtilses.size() > 0) {
+                    gridview.setAdapter(new MoviesGridAdapter(MainActivity.this, movieUtilses));
+                } else {
+                    FetchMovies fetchMovies = new FetchMovies();
+                    fetchMovies.execute(URL_POPULARITY);
+                }
             }
         }
 
@@ -132,7 +139,6 @@ public class MainActivity extends AppCompatActivity {
         if(id == R.id.actionFavoritesHome){
             Log.d(TAG , "Sorting the fav");
             movieUtilses = new ArrayList<>();
-            DBHandler dbHandler = new DBHandler(MainActivity.this);
             movieUtilses = dbHandler.getAllFavorites();
             MoviesGridAdapter moviesGridAdapter = new MoviesGridAdapter(MainActivity.this , movieUtilses);
             gridview.setAdapter(moviesGridAdapter);

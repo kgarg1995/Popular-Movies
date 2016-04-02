@@ -1,10 +1,13 @@
 package karan.com.popularmovies1;
 
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
@@ -20,6 +23,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -39,12 +43,23 @@ public class MovieDetails extends AppCompatActivity{
     private static String TAG_RESULT = "results";
     private static String TAG_NAME = "name";
     private static String TAG_KEY= "key";
+
+
+    private static String TAG_REVIEW_ID = "id";
+    private static String TAG_REVIEW_AUTHOR = "author";
+    private static String TAG_REVIEW_CONTENT= "content";
+    private static String TAG_REVIEW_URL= "url";
+
     private String BASE_IMAGE_URL= "http://image.tmdb.org/t/p/w342/";
     private String BASE_YOUTUBE_URL="https://youtu.be/";
     private String BASE_TRAILER_URL = "http://api.themoviedb.org/3/movie/";
+    private String BASE_REVIEW_URL = "http://api.themoviedb.org/3/movie/";
     private DBHandler dbHandler;
 
     private int flag = 0;
+
+    private RecyclerView mRecyclerView;
+    private RecyclerView.Adapter mAdapter;
 
     private OkHttpClient client;
     @Override
@@ -66,6 +81,16 @@ public class MovieDetails extends AppCompatActivity{
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         client = new OkHttpClient();
+
+        mRecyclerView = (RecyclerView) findViewById(R.id.reviewRecyclerView);
+        mRecyclerView.setHasFixedSize(true);
+
+        LinearLayoutManager llm = new LinearLayoutManager(MovieDetails.this);
+        llm.setOrientation(LinearLayoutManager.VERTICAL);
+        mRecyclerView.setLayoutManager(llm);
+        RecyclerView.ItemAnimator animator = mRecyclerView.getItemAnimator();
+        animator.setAddDuration(10000);
+        animator.setRemoveDuration(10000);
 
         posterImage = (ImageView) findViewById(R.id.detialsPoster);
         releaseDate = (TextView) findViewById(R.id.detailsReleaseDate);
@@ -91,6 +116,10 @@ public class MovieDetails extends AppCompatActivity{
             Picasso.with(MovieDetails.this).load(BASE_IMAGE_URL + movieUtils.posterPath).into(posterImage);
             FetchTrailerKey fetchTrailerKey =  new FetchTrailerKey();
             fetchTrailerKey.execute(BASE_TRAILER_URL  + movieUtils.id  + "/videos?api_key=36d9e05a1700874f1a755d3c95b0d6e8");
+
+            FetchReview fetchReview = new FetchReview();
+            fetchReview.execute(BASE_REVIEW_URL + movieUtils.id  + "/reviews?api_key=36d9e05a1700874f1a755d3c95b0d6e8");
+
         }
     }
 
@@ -101,7 +130,9 @@ public class MovieDetails extends AppCompatActivity{
         getMenuInflater().inflate(R.menu.menu_details, menu);
 
         if(movieUtils != null) {
-            if(dbHandler.getData(Integer.parseInt(movieUtils.id)) != null){
+            Cursor cursor = dbHandler.getData(Integer.parseInt(movieUtils.id));
+            Log.d(TAG , "data " + cursor.getCount());
+            if( cursor.getCount() > 0){
                 menu.findItem(R.id.actionFavorites).setIcon(R.drawable.action_favorite_filled);
                 flag=1;
             }
@@ -126,9 +157,11 @@ public class MovieDetails extends AppCompatActivity{
                 if(flag == 0) {
                     dbHandler.addFavrotite(movieUtils);
                     item.setIcon(R.drawable.action_favorite_filled);
+                    flag  = 1;
                 }else{
                     dbHandler.deleteFavorite(Integer.parseInt(movieUtils.id));
                     item.setIcon(R.drawable.action_favorite);
+                    flag = 0;
                 }
             }
         }
@@ -147,11 +180,63 @@ public class MovieDetails extends AppCompatActivity{
         return response.body().string();
     }
 
-    private class FetchTrailerKey extends AsyncTask<String , String , String> {
+    private class FetchReview extends AsyncTask<String , String , String> {
 
-        String JSONResult = null;
+
         @Override
         protected String doInBackground(String... params) {
+            String JSONResult = null;
+            try {
+                JSONResult = run(params[0]);
+            }catch (IOException e){
+                Log.e(TAG , "OkHTTP error " + e.getMessage());
+                JSONResult = null;
+            }
+            return JSONResult;
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            super.onPostExecute(result);
+
+            ArrayList<ReviewUtils> resultUtils = new ArrayList<>();
+            if(result != null){
+                try {
+                    Log.d(TAG, "result "+ result);
+                    JSONObject jsonObject = new JSONObject(result);
+                    JSONArray resultArray =  jsonObject.getJSONArray(TAG_RESULT);
+                    for(int i =0; i<resultArray.length() ;i++){
+                        JSONObject arrayObject = resultArray.getJSONObject(i);
+                        ReviewUtils reviewUtils = new ReviewUtils();
+
+                        reviewUtils.id = arrayObject.getString(TAG_REVIEW_ID);
+                        reviewUtils.author = arrayObject.getString(TAG_REVIEW_AUTHOR);
+                        reviewUtils.content = arrayObject.getString(TAG_REVIEW_CONTENT);
+                        reviewUtils.url = arrayObject.getString(TAG_REVIEW_URL);
+
+                        resultUtils.add(reviewUtils);
+                    }
+
+                    //TODO call adapter here
+                    mAdapter = new ReviewAdapter(MovieDetails.this, resultUtils);
+                    mRecyclerView.setAdapter(mAdapter);
+
+                }catch (Exception e){
+                    Log.e(TAG , "JSON error " + e.getMessage());
+                }
+
+            }
+
+        }
+    }
+
+
+    private class FetchTrailerKey extends AsyncTask<String , String , String> {
+
+
+        @Override
+        protected String doInBackground(String... params) {
+            String JSONResult = null;
             try {
                 JSONResult = run(params[0]);
             }catch (IOException e){
