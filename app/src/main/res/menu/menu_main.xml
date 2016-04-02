@@ -12,6 +12,10 @@
         android:title="@string/actionRatings"
         app:showAsAction="collapseActionView|withText" />
 
+    <item android:id="@+id/actionFavoritesHome"
+        android:title="@string/actionFavorites"
+        app:showAsAction="collapseActionView|withText" />
+
 
 
 </menu>

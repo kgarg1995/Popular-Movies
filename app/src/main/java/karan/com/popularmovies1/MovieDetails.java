@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
@@ -41,6 +42,9 @@ public class MovieDetails extends AppCompatActivity{
     private String BASE_IMAGE_URL= "http://image.tmdb.org/t/p/w342/";
     private String BASE_YOUTUBE_URL="https://youtu.be/";
     private String BASE_TRAILER_URL = "http://api.themoviedb.org/3/movie/";
+    private DBHandler dbHandler;
+
+    private int flag = 0;
 
     private OkHttpClient client;
     @Override
@@ -48,8 +52,7 @@ public class MovieDetails extends AppCompatActivity{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.movies_details);
 
-
-        Log.d(TAG, "URL ");
+        dbHandler = new DBHandler(MovieDetails.this);
 
         Intent i = getIntent();
         if(i != null){
@@ -91,12 +94,43 @@ public class MovieDetails extends AppCompatActivity{
         }
     }
 
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_details, menu);
+
+        if(movieUtils != null) {
+            if(dbHandler.getData(Integer.parseInt(movieUtils.id)) != null){
+                menu.findItem(R.id.actionFavorites).setIcon(R.drawable.action_favorite_filled);
+                flag=1;
+            }
+
+        }
+        return super.onCreateOptionsMenu(menu);
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int itemId = item.getItemId();
         if(itemId == android.R.id.home){
             // Do stuff
             finish();
+        }
+
+        if(itemId == R.id.actionFavorites){
+            //TODO save to favorite db and change icon
+
+
+            if(movieUtils != null) {
+                if(flag == 0) {
+                    dbHandler.addFavrotite(movieUtils);
+                    item.setIcon(R.drawable.action_favorite_filled);
+                }else{
+                    dbHandler.deleteFavorite(Integer.parseInt(movieUtils.id));
+                    item.setIcon(R.drawable.action_favorite);
+                }
+            }
         }
         return true;
     }

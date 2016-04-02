@@ -129,6 +129,15 @@ public class MainActivity extends AppCompatActivity {
             return true;
         }
 
+        if(id == R.id.actionFavoritesHome){
+            Log.d(TAG , "Sorting the fav");
+            movieUtilses = new ArrayList<>();
+            DBHandler dbHandler = new DBHandler(MainActivity.this);
+            movieUtilses = dbHandler.getAllFavorites();
+            MoviesGridAdapter moviesGridAdapter = new MoviesGridAdapter(MainActivity.this , movieUtilses);
+            gridview.setAdapter(moviesGridAdapter);
+        }
+
         return super.onOptionsItemSelected(item);
     }
 
@@ -194,21 +203,23 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected String doInBackground(String... params) {
             try {
-                publishProgress(run(params[0]));
+                return run(params[0]);
             }catch (IOException e){
                 Log.d(TAG , "okhttp error " + e.getMessage());
+                return null;
             }
 
-            return null;
+
         }
 
         @Override
-        protected void onProgressUpdate(String... result) {
-            if (result[0] != null) {
-                Log.d(TAG, "result "+ result[0]);
+        protected void onPostExecute(String result) {
+            super.onPostExecute(result);
+            if (result != null) {
+                Log.d(TAG, "result "+ result);
 
                 try {
-                    JSONObject resultJSON = new JSONObject(result[0]);
+                    JSONObject resultJSON = new JSONObject(result);
                     JSONArray resultJSONArray = resultJSON.getJSONArray(TAG_RESULTS);
 
                     movieUtilses = new ArrayList<>();
@@ -242,6 +253,7 @@ public class MainActivity extends AppCompatActivity {
 
             }
         }
+
 
     }
 
