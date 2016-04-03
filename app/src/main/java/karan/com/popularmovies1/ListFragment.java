@@ -60,6 +60,7 @@ public class ListFragment extends Fragment{
 
     private AppCompatActivity activity;
 
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -77,6 +78,8 @@ public class ListFragment extends Fragment{
         super.onCreateView(inflater, container, savedInstanceState);
 
         View rootView = inflater.inflate(R.layout.listfragment, container, false);
+
+        setHasOptionsMenu(true);
 
         gridview = (GridView) rootView.findViewById(R.id.gridviewListMovies);
 

@@ -71,7 +71,6 @@ public class DetailsFragment extends Fragment {
 
     private AppCompatActivity activity;
 
-
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -95,6 +94,8 @@ public class DetailsFragment extends Fragment {
         super.onCreateView(inflater, container, savedInstanceState);
 
         View rootView = inflater.inflate(R.layout.detailsfragment, container, false);
+
+        setHasOptionsMenu(true);
 
         Toolbar toolbar = (Toolbar) rootView.findViewById(R.id.toolbarMoviesDetials);
         activity.setSupportActionBar(toolbar);
@@ -164,9 +165,16 @@ public class DetailsFragment extends Fragment {
     public boolean onOptionsItemSelected(MenuItem item) {
         int itemId = item.getItemId();
 
+        if(itemId == android.R.id.home){
+            // Do stuff
+            activity.finish();
+        }
+
+
         if (itemId == R.id.actionFavorites) {
             //TODO save to favorite db and change icon
 
+            Log.d(TAG, "clicked");
 
             if (movieUtils != null) {
                 if (flag == 0) {

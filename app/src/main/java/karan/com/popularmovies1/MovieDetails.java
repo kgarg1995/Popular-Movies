@@ -2,7 +2,6 @@ package karan.com.popularmovies1;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.view.MenuItem;
 
 import okhttp3.OkHttpClient;
 
@@ -29,16 +28,5 @@ public class MovieDetails extends AppCompatActivity{
 
     }
 
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int itemId = item.getItemId();
-        if(itemId == android.R.id.home){
-            // Do stuff
-            finish();
-        }
-
-        return true;
-    }
 
 }
